@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import type { Person, Transaction } from '../types';
 import { TransactionType } from '../types';
-import { getPersons, getTransactions, createTransaction } from '../services/api';
+import { getTransactions, createTransaction } from '../services/api';
 
-export function TransactionManager() {
-	const [persons, setPersons] = useState<Person[]>([]);
+interface TransactionManagerProps {
+	persons: Person[];
+}
+
+
+export function TransactionManager({ persons }: TransactionManagerProps) {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [description, setDescription] = useState('');
 	const [value, setValue] = useState('');
@@ -13,19 +17,8 @@ export function TransactionManager() {
 	const [error, setError] = useState('');
 
 	useEffect(() => {
-		loadPersons();
 		loadTransactions();
 	}, []);
-
-	async function loadPersons() {
-		try {
-			const data = await getPersons();
-			setPersons(data);
-		} catch (err) {
-			console.error(err);
-			setError('Failed to load persons.');
-		}
-	}
 
 	async function loadTransactions() {
 		try {

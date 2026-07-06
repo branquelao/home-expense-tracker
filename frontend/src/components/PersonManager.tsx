@@ -1,30 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Person } from '../types';
-import { getPersons, createPerson, deletePerson } from '../services/api';
+import { createPerson, deletePerson } from '../services/api';
 
-export function PersonManager() {
-	const [persons, setPersons] = useState<Person[]>([]);
+interface PersonManagerProps {
+	persons: Person[];
+	onPersonsChanged: () => void;
+}
+
+export function PersonManager({ persons, onPersonsChanged }: PersonManagerProps) {
 	const [name, setName] = useState('');
 	const [age, setAge] = useState('');
 	const [error, setError] = useState('');
 
-	// Loads the person list once, when the component first renders.
-	useEffect(() => {
-		loadPersons();
-	}, []);
-
-	async function loadPersons() {
-		try {
-			const data = await getPersons();
-			setPersons(data);
-		} catch (err) {
-			console.error(err);
-			setError('Failed to load persons.');
-		}
-	}
-
 	async function handleCreate(event: React.FormEvent) {
-		event.preventDefault(); // prevents the page from reloading on submit
+		event.preventDefault();
 		setError('');
 
 		if (!name.trim() || !age) {
@@ -36,7 +25,7 @@ export function PersonManager() {
 			await createPerson(name, Number(age));
 			setName('');
 			setAge('');
-			loadPersons(); // refresh the list after creating
+			onPersonsChanged(); // tells the parent to refresh the shared list
 		} catch (err) {
 			console.error(err);
 			setError('Failed to create person.');
@@ -46,7 +35,7 @@ export function PersonManager() {
 	async function handleDelete(id: number) {
 		try {
 			await deletePerson(id);
-			loadPersons(); // refresh the list after deleting
+			onPersonsChanged();
 		} catch (err) {
 			console.error(err);
 			setError('Failed to delete person.');
