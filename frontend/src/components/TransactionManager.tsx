@@ -57,10 +57,10 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 	}
 
 	return (
-		<section>
+		<section className="card">
 			<h2>Transactions</h2>
 
-			<form onSubmit={handleCreate}>
+			<form className="form-row" onSubmit={handleCreate}>
 				<input
 					type="text"
 					placeholder="Description"
@@ -93,25 +93,29 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 					</option>
 				</select>
 
-				{isMinorSelected && (
-					<p style={{ color: 'darkorange' }}>
-						This person is a minor: only expenses are allowed.
-					</p>
-				)}
-
-				<button type="submit">Add Transaction</button>
+				<button type="submit" className="primary-button">Add Transaction</button>
 			</form>
 
-			{error && <p style={{ color: 'red' }}>{error}</p>}
+			{isMinorSelected && (
+				<p className="warning-message">
+					This person is a minor: only expenses are allowed.
+				</p>
+			)}
 
-			<ul>
+			{error && <p className="error-message">{error}</p>}
+
+			<ul className="item-list">
 				{transactions.map((transaction) => {
 					const person = persons.find((p) => p.id === transaction.personId);
+					const isIncome = transaction.type === TransactionType.Income;
 					return (
-						<li key={transaction.id}>
-							{transaction.description} — R$ {transaction.value.toFixed(2)} (
-							{transaction.type === TransactionType.Income ? 'Income' : 'Expense'}) —{' '}
-							{person ? person.name : `Person #${transaction.personId}`}
+						<li key={transaction.id} className="item-row">
+							<span>
+								{transaction.description} — {person ? person.name : `Person #${transaction.personId}`}
+							</span>
+							<span className={isIncome ? 'badge badge-income' : 'badge badge-expense'}>
+								{isIncome ? 'Income' : 'Expense'}: R$ {transaction.value.toFixed(2)}
+							</span>
 						</li>
 					);
 				})}

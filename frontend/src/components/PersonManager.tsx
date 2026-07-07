@@ -43,10 +43,10 @@ export function PersonManager({ persons, onPersonsChanged }: PersonManagerProps)
 	}
 
 	return (
-		<section>
+		<section className="card">
 			<h2>People</h2>
 
-			<form onSubmit={handleCreate}>
+			<form className="form-row" onSubmit={handleCreate}>
 				<input
 					type="text"
 					placeholder="Name"
@@ -59,16 +59,16 @@ export function PersonManager({ persons, onPersonsChanged }: PersonManagerProps)
 					value={age}
 					onChange={(e) => setAge(e.target.value)}
 				/>
-				<button type="submit">Add Person</button>
+				<button type="submit" className="primary-button">Add Person</button>
 			</form>
 
-			{error && <p style={{ color: 'red' }}>{error}</p>}
+			{error && <p className="error-message">{error}</p>}
 
-			<ul>
+			<ul className="item-list">
 				{persons.map((person) => (
-					<li key={person.id}>
-						{person.name} ({person.age} years old)
-						<button onClick={() => handleDelete(person.id)}>Delete</button>
+					<li key={person.id} className="item-row">
+						<span>{person.name} ({person.age} years old)</span>
+						<button onClick={() => handleDelete(person.id)} className="delete-button">Delete</button>
 					</li>
 				))}
 			</ul>
