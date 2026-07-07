@@ -22,8 +22,8 @@ function App() {
 	}
 
 	return (
-		<div>
-			<h1>Home Expense Tracker</h1>
+		<div className="app-container">
+			<h1 className="app-title">Home Expense Tracker</h1>
 			<PersonManager persons={persons} onPersonsChanged={loadPersons} />
 			<TransactionManager persons={persons} />
 			<TotalsView />
