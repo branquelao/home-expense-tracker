@@ -17,11 +17,19 @@ namespace HomeExpenseTracker.Api.Services
         }
 
         /// <summary>Returns all registered transactions.</summary>
-        public async Task<IEnumerable<TransactionDto>> GetAllAsync()
+        public async Task<PagedResultDto<TransactionDto>> GetAllAsync(int pageNumber, int pageSize)
         {
-            return await _context.Transactions
+            var query = _context.Transactions.AsQueryable();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(t => t.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(t => new TransactionDto(t.Id, t.Description, t.Value, t.Type, t.PersonId))
                 .ToListAsync();
+
+            return new PagedResultDto<TransactionDto>(items, totalCount, pageNumber, pageSize);
         }
 
         /// <summary>Creates a transaction. Returns null if the person does not exist.</summary>

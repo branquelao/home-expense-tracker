@@ -18,9 +18,10 @@ namespace HomeExpenseTracker.Api.Controllers
 
         /// <summary>Lists all registered transactions.</summary>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TransactionDto>>> GetAll()
+        public async Task<ActionResult<PagedResultDto<TransactionDto>>> GetAll(
+            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            return Ok(await _transactionService.GetAllAsync());
+            return Ok(await _transactionService.GetAllAsync(pageNumber, pageSize));
         }
 
         /// <summary>Creates a new transaction, validating the minor-only-expense rule.</summary>
