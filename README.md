@@ -61,7 +61,7 @@ Swagger disponível em:
    ```
    dotnet restore
    dotnet ef database update
-   dotnet run
+   dotnet run --launch-profile https
    ```
 3. Swagger disponível em:
    `https://localhost:7210/swagger`
