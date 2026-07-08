@@ -171,6 +171,14 @@ button {
 	border-bottom: none;
 }
 
+.pagination-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 16px;
+	justify-content: center;
+}
+
 /* Revenue/Expense Badges */
 .badge {
 	font-size: 0.8rem;

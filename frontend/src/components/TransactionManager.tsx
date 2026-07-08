@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Person, Transaction } from '../types';
+import type { Person, Transaction, } from '../types';
 import { TransactionType } from '../types';
 import { getTransactions, createTransaction, updateTransaction } from '../services/api';
  
@@ -15,15 +15,20 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 	const [personId, setPersonId] = useState('');
 	const [error, setError] = useState('');
 	const [editingId, setEditingId] = useState<number | null>(null);
+	const [pageNumber, setPageNumber] = useState(1);
+	const [totalCount, setTotalCount] = useState(0);
+	const pageSize = 10;
+	const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
  
 	useEffect(() => {
 		loadTransactions();
-	}, []);
+	}, [pageNumber]);
  
 	async function loadTransactions() {
 		try {
-			const data = await getTransactions();
-			setTransactions(data);
+			const result = await getTransactions(pageNumber, pageSize);
+			setTransactions(result.items);
+			setTotalCount(result.totalCount);
 		} catch (err) {
 			console.error(err);
 			setError('Failed to load transactions.');
@@ -151,6 +156,24 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 					);
 				})}
 			</ul>
+
+			<div className="pagination-controls">
+				<button
+					className="refresh-button"
+					disabled={pageNumber <= 1}
+					onClick={() => setPageNumber((p) => p - 1)}
+				>
+					Previous
+				</button>
+				<span>Page {pageNumber} of {totalPages}</span>
+				<button
+					className="refresh-button"
+					disabled={pageNumber >= totalPages}
+					onClick={() => setPageNumber((p) => p + 1)}
+				>
+					Next
+				</button>
+			</div>
 		</section>
 	);
 }

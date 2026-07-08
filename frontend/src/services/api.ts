@@ -1,4 +1,4 @@
-import type { Person, Transaction, TotalsResponse } from '../types';
+import type { Person, Transaction, TotalsResponse, PagedResult } from '../types';
 import { TransactionType } from '../types';
 
 const API_BASE_URL = 'https://localhost:7210/api';
@@ -30,9 +30,8 @@ export async function deletePerson(id: number): Promise<void> {
 }
 
 // --- Transactions ---
-
-export async function getTransactions(): Promise<Transaction[]> {
-  const response = await fetch(`${API_BASE_URL}/transactions`);
+export async function getTransactions(pageNumber = 1, pageSize = 10): Promise<PagedResult<Transaction>> {
+  const response = await fetch(`${API_BASE_URL}/transactions?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   if (!response.ok) throw new Error('Failed to fetch transactions');
   return response.json();
 }
