@@ -160,6 +160,13 @@ button {
 	border-bottom: 1px solid #f0f1f3;
 }
 
+.item-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
 .item-row:last-child {
 	border-bottom: none;
 }

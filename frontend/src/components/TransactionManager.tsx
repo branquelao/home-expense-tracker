@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { Person, Transaction } from '../types';
 import { TransactionType } from '../types';
-import { getTransactions, createTransaction } from '../services/api';
-
+import { getTransactions, createTransaction, updateTransaction } from '../services/api';
+ 
 interface TransactionManagerProps {
 	persons: Person[];
 }
-
-
+ 
 export function TransactionManager({ persons }: TransactionManagerProps) {
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [description, setDescription] = useState('');
@@ -15,11 +14,12 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 	const [type, setType] = useState<TransactionType>(TransactionType.Expense);
 	const [personId, setPersonId] = useState('');
 	const [error, setError] = useState('');
-
+	const [editingId, setEditingId] = useState<number | null>(null);
+ 
 	useEffect(() => {
 		loadTransactions();
 	}, []);
-
+ 
 	async function loadTransactions() {
 		try {
 			const data = await getTransactions();
@@ -29,38 +29,57 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 			setError('Failed to load transactions.');
 		}
 	}
-
-	// Finds the currently selected person, used to check if they are a minor.
+ 
 	const selectedPerson = persons.find((p) => p.id === Number(personId));
 	const isMinorSelected = selectedPerson !== undefined && selectedPerson.age < 18;
-
-	async function handleCreate(event: React.FormEvent) {
+	const isEditing = editingId !== null;
+ 
+	function startEdit(transaction: Transaction) {
+		setEditingId(transaction.id);
+		setDescription(transaction.description);
+		setValue(String(transaction.value));
+		setType(transaction.type);
+		setPersonId(String(transaction.personId));
+		setError('');
+	}
+ 
+	function cancelEdit() {
+		setEditingId(null);
+		setDescription('');
+		setValue('');
+		setType(TransactionType.Expense);
+		setPersonId('');
+		setError('');
+	}
+ 
+	async function handleSubmit(event: React.FormEvent) {
 		event.preventDefault();
 		setError('');
-
+ 
 		if (!description.trim() || !value || !personId) {
 			setError('Description, value and person are required.');
 			return;
 		}
-
+ 
 		try {
-			await createTransaction(description, Number(value), type, Number(personId));
-			setDescription('');
-			setValue('');
+			if (isEditing) {
+				await updateTransaction(editingId!, description, Number(value), type, Number(personId));
+			} else {
+				await createTransaction(description, Number(value), type, Number(personId));
+			}
+			cancelEdit();
 			loadTransactions();
 		} catch (err) {
-			// The backend returns a plain-text message when a business rule is violated
-			// (e.g. minor registering an income transaction), so we show it directly.
-			const message = err instanceof Error ? err.message : 'Failed to create transaction.';
+			const message = err instanceof Error ? err.message : 'Failed to save transaction.';
 			setError(message);
 		}
 	}
-
+ 
 	return (
 		<section className="card">
 			<h2>Transactions</h2>
-
-			<form className="form-row" onSubmit={handleCreate}>
+ 
+			<form className="form-row" onSubmit={handleSubmit}>
 				<input
 					type="text"
 					placeholder="Description"
@@ -73,7 +92,7 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 					value={value}
 					onChange={(e) => setValue(e.target.value)}
 				/>
-
+ 
 				<select value={personId} onChange={(e) => setPersonId(e.target.value)}>
 					<option value="">Select a person</option>
 					{persons.map((person) => (
@@ -82,7 +101,7 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 						</option>
 					))}
 				</select>
-
+ 
 				<select
 					value={type}
 					onChange={(e) => setType(Number(e.target.value) as TransactionType)}
@@ -92,18 +111,25 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 						Income
 					</option>
 				</select>
-
-				<button type="submit" className="primary-button">Add Transaction</button>
+ 
+				<button type="submit" className="primary-button">
+					{isEditing ? 'Save Changes' : 'Add Transaction'}
+				</button>
+				{isEditing && (
+					<button type="button" className="refresh-button" onClick={cancelEdit}>
+						Cancel
+					</button>
+				)}
 			</form>
-
+ 
 			{isMinorSelected && (
 				<p className="warning-message">
 					This person is a minor: only expenses are allowed.
 				</p>
 			)}
-
+ 
 			{error && <p className="error-message">{error}</p>}
-
+ 
 			<ul className="item-list">
 				{transactions.map((transaction) => {
 					const person = persons.find((p) => p.id === transaction.personId);
@@ -113,9 +139,14 @@ export function TransactionManager({ persons }: TransactionManagerProps) {
 							<span>
 								{transaction.description} — {person ? person.name : `Person #${transaction.personId}`}
 							</span>
-							<span className={isIncome ? 'badge badge-income' : 'badge badge-expense'}>
-								{isIncome ? 'Income' : 'Expense'}: R$ {transaction.value.toFixed(2)}
-							</span>
+							<div className="item-actions">
+								<span className={isIncome ? 'badge badge-income' : 'badge badge-expense'}>
+									{isIncome ? 'Income' : 'Expense'}: R$ {transaction.value.toFixed(2)}
+								</span>
+								<button className="refresh-button" onClick={() => startEdit(transaction)}>
+									Edit
+								</button>
+							</div>
 						</li>
 					);
 				})}

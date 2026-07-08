@@ -55,8 +55,26 @@ export async function createTransaction(
   return response.json();
 }
 
-// --- Totals ---
+export async function updateTransaction(
+  id: number,
+  description: string,
+  value: number,
+  type: TransactionType,
+  personId: number
+): Promise<Transaction> {
+  const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description, value, type, personId }),
+  });
+  if (!response.ok) {
+    const errorMessage = await response.text();
+    throw new Error(errorMessage || 'Failed to update transaction');
+  }
+  return response.json();
+}
 
+// --- Totals ---
 export async function getTotals(): Promise<TotalsResponse> {
   const response = await fetch(`${API_BASE_URL}/totals`);
   if (!response.ok) throw new Error('Failed to fetch totals');
