@@ -7,5 +7,6 @@ namespace HomeExpenseTracker.Api.Services
     {
         Task<IEnumerable<TransactionDto>> GetAllAsync();
         Task<TransactionDto?> CreateAsync(CreateTransactionDto dto);
+        Task<TransactionDto?> UpdateAsync(int id, UpdateTransactionDto dto);
     }
 }

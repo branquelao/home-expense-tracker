@@ -38,5 +38,21 @@ namespace HomeExpenseTracker.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        /// <summary>Updates an existing transaction, validating the minor-only-expense rule.</summary>
+        [HttpPut("{id}")]
+        public async Task<ActionResult<TransactionDto>> Update(int id, UpdateTransactionDto dto)
+        {
+            try
+            {
+                var updated = await _transactionService.UpdateAsync(id, dto);
+                if (updated is null) return NotFound($"Transaction with id {id} or person with id {dto.PersonId} not found.");
+                return Ok(updated);
+            }
+            catch (DomainException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

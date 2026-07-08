@@ -50,5 +50,31 @@ namespace HomeExpenseTracker.Api.Services
 
             return new TransactionDto(transaction.Id, transaction.Description, transaction.Value, transaction.Type, transaction.PersonId);
         }
+
+        /// <summary>Updates an existing transaction. Returns null if the transaction or the person does not exist.</summary>
+        /// <exception cref="DomainException">Thrown when a minor is updated with an income transaction.</exception>
+        public async Task<TransactionDto?> UpdateAsync(int id, UpdateTransactionDto dto)
+        {
+            var transaction = await _context.Transactions.FindAsync(id);
+            if (transaction is null) return null;
+
+            var person = await _context.People.FindAsync(dto.PersonId);
+            if (person is null) return null;
+
+            // Business rule: people under 18 can only register expenses.
+            if (person.Age < MinorAgeLimit && dto.Type == TransactionType.Income)
+            {
+                throw new DomainException("Minors (under 18) can only register expense transactions.");
+            }
+
+            transaction.Description = dto.Description;
+            transaction.Value = dto.Value;
+            transaction.Type = dto.Type;
+            transaction.PersonId = dto.PersonId;
+
+            await _context.SaveChangesAsync();
+
+            return new TransactionDto(transaction.Id, transaction.Description, transaction.Value, transaction.Type, transaction.PersonId);
+        }
     }
 }

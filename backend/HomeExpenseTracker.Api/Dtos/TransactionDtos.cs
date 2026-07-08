@@ -7,4 +7,7 @@ namespace HomeExpenseTracker.Api.Dtos
 
     /// <summary>Data required to create a new transaction.</summary>
     public record CreateTransactionDto(string Description, decimal Value, TransactionType Type, int PersonId);
+
+    /// <summary>Data required to update an existing transaction.</summary>
+    public record UpdateTransactionDto(string Description, decimal Value, TransactionType Type, int PersonId);
 }
